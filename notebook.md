@@ -1,32 +1,17 @@
 
-## 1. 49999 New York taxi trips
-<p><img style="float: right;margin:5px 20px 5px 1px; max-width:300px" src="https://assets.datacamp.com/production/project_496/img/taxi.jpg"> To drive a yellow New York taxi, you have to hold a "medallion" from the city's <em>Taxi and Limousine Commission</em>. Recently, one of those changed hands for over one million dollars, which shows how lucrative the job can be.</p>
-<p>But this is the age of business intelligence and analytics! Even taxi drivers can stand to benefit from some careful investigation of the data, guiding them to maximize their profits. In this project, we will analyze a random sample of 49999 New York journeys made in 2013. We will also use regression trees and random forests to build a model that can predict the locations and times when the biggest fares can be earned.</p>
+## 1. New York taxi trips preds
+<p>In this project, we will analyze a random sample of New York journeys. We will also use regression trees and random forests to build a model that can predict the locations and times when the biggest fares can be earned.</p>
 <p>Let's start by taking a look at the data!</p>
-
 
 ```R
 # Loading the tidyverse
-# .... YOUR CODE FOR TASK 1 ....
 library(tidyverse)
 # Reading in the taxi data
 taxi <- read.csv('datasets/taxi.csv')
 
 # Taking a look at the first few rows in taxi
-# .... YOUR CODE FOR TASK 1 ....
 head(taxi)
 ```
-
-    -- Attaching packages --------------------------------------- tidyverse 1.3.0 --
-    v ggplot2 3.3.2     v purrr   0.3.4
-    v tibble  3.0.3     v dplyr   1.0.2
-    v tidyr   1.1.2     v stringr 1.4.0
-    v readr   1.3.1     v forcats 0.5.0
-    -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-    x dplyr::filter() masks stats::filter()
-    x dplyr::lag()    masks stats::lag()
-
-
 
 <table>
 <thead><tr><th scope=col>medallion</th><th scope=col>pickup_datetime</th><th scope=col>pickup_longitude</th><th scope=col>pickup_latitude</th><th scope=col>trip_time_in_secs</th><th scope=col>fare_amount</th><th scope=col>tip_amount</th></tr></thead>
@@ -41,84 +26,9 @@ head(taxi)
 </table>
 
 
-
-
-```R
-library(testthat) 
-library(IRkernel.testthat)
-
-run_tests({
-    test_that("Test that tidyverse is loaded", {
-        expect_true( "package:tidyverse" %in% search(), 
-            info = "The tidyverse package should be loaded using library().")
-    })
-    
-    test_that("Read in data correctly.", {
-        expect_is(taxi, "tbl_df", 
-            info = 'You should use read_csv (with an underscore) to read "datasets/taxi.csv" into taxi.')
-    })
-    
-    test_that("Read in data correctly.", {
-        taxi_temp <- read_csv('datasets/taxi.csv')
-        expect_equivalent(taxi, taxi_temp, 
-            info = 'taxi should contain the data in "datasets/taxi.csv".')
-    })
-})
-```
-
-    
-    Attaching package: 'testthat'
-    
-    The following object is masked from 'package:dplyr':
-    
-        matches
-    
-    The following object is masked from 'package:purrr':
-    
-        is_null
-    
-    The following object is masked from 'package:tidyr':
-    
-        matches
-    
-
-
-
-
-
-    <ProjectReporter>
-      Inherits from: <ListReporter>
-      Public:
-        .context: NULL
-        .end_context: function (context) 
-        .start_context: function (context) 
-        add_result: function (context, test, result) 
-        all_tests: environment
-        cat_line: function (...) 
-        cat_tight: function (...) 
-        clone: function (deep = FALSE) 
-        current_expectations: environment
-        current_file: some name
-        current_start_time: 3.801 0.155 11.388 0.005 0.001
-        dump_test: function (test) 
-        end_context: function (context) 
-        end_reporter: function () 
-        end_test: function (context, test) 
-        get_results: function () 
-        initialize: function (...) 
-        is_full: function () 
-        out: 3
-        results: environment
-        rule: function (...) 
-        start_context: function (context) 
-        start_file: function (name) 
-        start_reporter: function () 
-        start_test: function (context, test) 
-
-
 ## 2. Cleaning the taxi data
 <p>As you can see above, the <code>taxi</code> dataset contains the times and price of a large number of taxi trips. Importantly we also get to know the location, the longitude and latitude, where the trip was started.</p>
-<p>Cleaning data is a large part of any data scientist's daily work. It may not seem glamorous, but it makes the difference between a successful model and a failure. The <code>taxi</code> dataset needs a bit of polishing before we're ready to use it.</p>
+<p>The <code>taxi</code> dataset needs a bit of polishing before we're ready to use it.</p>
 
 
 ```R
@@ -146,67 +56,6 @@ head(taxi)
 </table>
 
 
-
-
-```R
-run_tests({
-    test_that("rename lat", {
-        expect_true(!is.null(taxi$lat), 
-            info = "The taxi data frame does not contain a variable called lat. You need to rename pickup_latitude.")
-    })
-    test_that("rename long", {
-        expect_true(!is.null(taxi$long), 
-            info = "The taxi data frame does not contain a variable called long. You need to rename pickup_longitude.")
-    })
-    test_that("total exists", {
-        expect_true(!is.null(taxi$total), 
-            info = "The taxi data frame does not contain a variable called total. You need to create this as the logarithm (use the log() function) of the sum of fare_amount and tip_amount.")
-    })
-    test_that("Modified data correctly.", {
-        taxi_temp <- read_csv('datasets/taxi.csv') %>%
-            rename(long = pickup_longitude, lat = pickup_latitude)  %>% 
-            filter(fare_amount > 0 | tip_amount > 0) %>%
-            mutate(total = log(fare_amount + tip_amount) )
-        expect_equivalent(taxi, taxi_temp, 
-            info = 'The taxi dataframe has not been modified correctly. See if you can find something is wrong with your code.')
-    })
-})
-
-```
-
-
-
-
-    <ProjectReporter>
-      Inherits from: <ListReporter>
-      Public:
-        .context: NULL
-        .end_context: function (context) 
-        .start_context: function (context) 
-        add_result: function (context, test, result) 
-        all_tests: environment
-        cat_line: function (...) 
-        cat_tight: function (...) 
-        clone: function (deep = FALSE) 
-        current_expectations: environment
-        current_file: some name
-        current_start_time: 4.292 0.206 12.09 0.005 0.001
-        dump_test: function (test) 
-        end_context: function (context) 
-        end_reporter: function () 
-        end_test: function (context, test) 
-        get_results: function () 
-        initialize: function (...) 
-        is_full: function () 
-        out: 3
-        results: environment
-        rule: function (...) 
-        start_context: function (context) 
-        start_file: function (name) 
-        start_reporter: function () 
-        start_test: function (context, test) 
-
-
 ## 3. Zooming in on Manhattan
 <p>While the dataset contains taxi trips from all over New York City, the bulk of the trips are to and from Manhattan, so let's focus only on trips initiated there.</p>
 
@@ -221,50 +70,8 @@ taxi <- taxi  %>%
 ```
 
 
-```R
-run_tests({
-  test_that("The correct number of rows have been filtered away", {
-      expect_equal(45766, nrow(taxi), 
-      info = "It seems you haven't filter away the taxi trips outside of Manhattan correctly.")
-  })
-})
-```
-
-
-
-
-    <ProjectReporter>
-      Inherits from: <ListReporter>
-      Public:
-        .context: NULL
-        .end_context: function (context) 
-        .start_context: function (context) 
-        add_result: function (context, test, result) 
-        all_tests: environment
-        cat_line: function (...) 
-        cat_tight: function (...) 
-        clone: function (deep = FALSE) 
-        current_expectations: environment
-        current_file: some name
-        current_start_time: 4.913 0.222 12.729 0.005 0.001
-        dump_test: function (test) 
-        end_context: function (context) 
-        end_reporter: function () 
-        end_test: function (context, test) 
-        get_results: function () 
-        initialize: function (...) 
-        is_full: function () 
-        out: 3
-        results: environment
-        rule: function (...) 
-        start_context: function (context) 
-        start_file: function (name) 
-        start_reporter: function () 
-        start_test: function (context, test) 
-
-
 ## 4. Where does the journey begin?
-<p>It's time to draw a map! We're going to use the excellent <code>ggmap</code> package together with <code>ggplot2</code> to visualize where in Manhattan people tend to start their taxi journeys.</p>
+<p>It's time to draw a map! We're going to use the <code>ggmap</code> package together with <code>ggplot2</code> to visualize where in Manhattan people tend to start their taxi journeys.</p>
 
 
 ```R
@@ -284,9 +91,6 @@ ggmap(manhattan, darken = 0.5) +
   
 ```
 
-    Google's Terms of Service: https://cloud.google.com/maps-platform/terms/.
-    Please cite ggmap if you use it! See citation("ggmap") for details.
-    Loading required package: viridisLite
 
 
 
@@ -295,31 +99,6 @@ ggmap(manhattan, darken = 0.5) +
 ![png](output_10_2.png)
 
 
-
-```R
-run_tests({
-    
-    test_that("Test that ggmap is loaded", {
-        expect_true( "package:ggmap" %in% search(), 
-            info = "The ggmap package should be loaded using library().")
-    })
-    test_that("Test that viridis is loaded", {
-        expect_true( "package:viridis" %in% search(), 
-            info = "The viridis package should be loaded using library().")
-    })
-    
-    test_that("Check that geom_bin2d was used", {
-        p <- last_plot()
-        stat_classes <- as.character(sapply(p$layers, function(layer) {
-            class(layer$stat)
-        }))
-
-        expect_true("StatBin2d" %in% stat_classes, 
-            info = "You need to use geom_bin2d correctly to draw the map.")
-    })
-})
-
-```
 
 ## 5. Predicting taxi fares using a tree
 <p>The map from the previous task showed that the journeys are highly concentrated in the business and tourist areas. We also see that some taxi trips originating in Brooklyn slipped through, but that's fine. </p>
@@ -342,24 +121,8 @@ text(fitted_tree)
 ![png](output_13_0.png)
 
 
-
-```R
-run_tests({
-    test_that("Test that tree is loaded", {
-        expect_true( "package:tree" %in% search(), 
-            info = "The tree package should be loaded using library().")
-    })
-  test_that("The tree has been fitted correctly", {
-      correctly_fitted_tree <- tree(total ~ lat + long, data = taxi)
-      expect_equivalent(fitted_tree, correctly_fitted_tree, 
-      info = "It seem you didn't fit the tree correctly. Check the hint, it might help!")
-  })
-})
-
-```
-
-## 6. It's time. More predictors.
-<p>The tree above looks a bit frugal, it only includes one split: It predicts that trips where <code>lat &lt; 40.7237</code> are more expensive, which makes sense as it is downtown Manhattan. But that's it. It didn't even include <code>long</code> as <code>tree</code> deemed that it didn't improve the predictions. Taxi drivers will need more information than this and any driver paying for your data-driven insights would be disappointed with that. As we know from Robert de Niro, it's best not to upset New York taxi drivers.</p>
+## 6. More predictors.
+<p>It only includes one split: It predicts that trips where <code>lat &lt; 40.7237</code> are more expensive, which makes sense as it is downtown Manhattan. But that's it. It didn't even include <code>long</code> as <code>tree</code> deemed that it didn't improve the predictions. </p>
 <p>Let's start by adding some more predictors related to the <em>time</em> the taxi trip was made.</p>
 
 
@@ -374,36 +137,6 @@ taxi <- taxi %>%
            month = month(pickup_datetime, label = TRUE))
 ```
 
-    
-    Attaching package: 'lubridate'
-    
-    The following object is masked from 'package:base':
-    
-        date
-    
-
-
-
-```R
-run_tests({
-    test_that("Test that lubridate is loaded", {
-        expect_true( "package:lubridate" %in% search(), 
-            info = "The lubridate package should be loaded using library().")
-    })
-    test_that("hour is correct", {
-        expect_equivalent(taxi$hour[1], 10L, 
-            info = "The `hour` column doesn't seem to be correct. Check the hint for more help.")
-    })
-    test_that("wday is correct", {
-        expect_true(taxi$wday[1] == "Sun", 
-            info = "The `wday` column doesn't seem to be correct. Check the hint for more help.")
-    })
-    test_that("month is correct", {
-        expect_true(taxi$month[1] == "Jan", 
-            info = "The `month` column doesn't seem to be correct. Check the hint for more help.")
-    })
-})
-```
 
 ## 7. One more tree!
 <p>Let's try fitting a new regression tree where we include the new time variables.</p>
@@ -439,16 +172,6 @@ summary(fitted_tree)
 
 
 
-```R
-run_tests({
-  test_that("The tree has been fitted correctly", {
-      correctly_fitted_tree <- tree(total ~ lat + long + hour + wday + month, data = taxi)
-      expect_equivalent(fitted_tree, correctly_fitted_tree, 
-      info = "It seem you didn't fit the tree correctly. Check the hint, it might help!")
-  })
-})
-```
-
 ## 8. One tree is not enough
 <p>The regression tree has not changed after including the three time variables. This is likely because latitude is still the most promising first variable to split the data on, and after that split, the other variables are not informative enough to be included. A random forest model, where many different trees are fitted to subsets of the data, may well include the other variables in some of the trees that make it up. </p>
 
@@ -465,22 +188,6 @@ fitted_forest <- randomForest(total ~ lat + long + hour + wday + month,
 fitted_forest
 ```
 
-    randomForest 4.6-14
-    Type rfNews() to see new features/changes/bug fixes.
-    
-    Attaching package: 'randomForest'
-    
-    The following object is masked from 'package:dplyr':
-    
-        combine
-    
-    The following object is masked from 'package:ggplot2':
-    
-        margin
-    
-
-
-
     
     Call:
      randomForest(formula = total ~ lat + long + hour + wday + month,      data = taxi, ntree = 80, sampsize = 10000) 
@@ -492,26 +199,6 @@ fitted_forest
                         % Var explained: 1.81
 
 
-
-```R
-run_tests({
-    test_that("Test that randomForest is loaded", {
-        expect_true( "package:randomForest" %in% search(), 
-            info = "The randomForest package should be loaded using library().")
-    })
-    test_that("ntree is correct.", {
-        expect_true(fitted_forest$ntree == 80, 
-            info = "The ntree argument to randomForest should be ntree = 80 .")
-    })
-    test_that("Check randomForest call was ok", {
-        call_string <- paste(deparse(fitted_forest$call), collapse = " ")
-        keywords <- c("total", "lat", "long", "hour", "wday", "month",
-                      "ntree", "sampsize", "100")
-        expect_true(all(str_detect(call_string, keywords)), 
-            info = "You have not called randomForest correctly. Did you include all the predictors and the right output variable?.")
-    })
-})
-```
 
 ## 9. Plotting the predicted fare
 <p>In the output of <code>fitted_forest</code> you should see the <code>Mean of squared residuals</code>, that is, the average of the squared errors the model makes. If you scroll up and check the <code>summary</code> of <code>fitted_tree</code> you'll find <code>Residual mean deviance</code> which is the same number. If you compare these numbers, you'll see that <code>fitted_forest</code> has a slightly lower error. Neither predictive model is <em>that</em> good, in statistical terms, they explain only about 3% of the variance. </p>
@@ -537,33 +224,6 @@ ggmap(manhattan, darken=0.5) +
 
 
 
-```R
-run_tests({
-    test_that("taxi$pred_total == fitted_forest$predicted", {
-        expect_true(all(taxi$pred_total == fitted_forest$predicted), 
-            info = "You should assign fitted_forest$predicted to taxi$pred_total .")
-    })
-    test_that("Check that stat_summary_2d was used", {
-        p <- last_plot()
-        stat_classes <- as.character(sapply(p$layers, function(layer) {
-            class(layer$stat)
-        }))
-
-        expect_true("StatSummary2d" %in% stat_classes, 
-            info = "You need to use geom_bin2d correctly to draw the map.")
-    })
-    test_that("Check that pred_total was used", {
-        p <- last_plot()
-        p_variables <- unlist(sapply(p$layers, function(layer) {
-            as.character(layer$mapping)
-        }))
-        expect_true(any(str_detect(p_variables, "pred_total")), 
-            info = "You need to connect pred_total to z in the aes() call correctly.")
-    })
-})
-
-```
-
 ## 10. Plotting the actual fare
 <p>Looking at the map with the predicted fares we see that fares in downtown Manhattan are predicted to be high, while midtown is lower. This map only shows the prediction as a function of <code>lat</code> and <code>long</code>, but we could also plot the predictions over time, or a combination of time and space, but we'll leave that for another time.</p>
 <p>For now, let's compare the map with the predicted fares with a new map showing the mean fares according to the data.</p>
@@ -585,42 +245,9 @@ ggmap(manhattan, darken=0.5) +
 ```
 
 
-
-
 ![png](output_28_1.png)
 
 
-
-```R
-run_tests({
-    test_that("Check that total was used but not pred_total", {
-        p <- last_plot()
-        p_variables <- unlist(sapply(p$layers, function(layer) {
-            as.character(layer$mapping)
-        }))
-        expect_true(any(str_detect(p_variables, "total")) & 
-                   !any(str_detect(p_variables, "pred_total")), 
-            info = "You need to connect total to z in the aes() call correctly. Make sure you are not still using pred_total.")
-    })
-})
-```
-
 ## 11. Where  do people spend the most?
-<p>So it looks like the random forest model captured some of the patterns in our data. At this point in the analysis, there are many more things we could do that we haven't done. We could add more predictors if we have the data. We could try to fine-tune the parameters of <code>randomForest</code>. And we should definitely test the model on a hold-out test dataset. But for now, let's be happy with what we have achieved!</p>
-<p>So, if you are a taxi driver in NYC, where in Manhattan would you expect people to spend the most on a taxi ride?</p>
+<p>So it looks like the random forest model captured some of the patterns in our data. We could add more predictors if we have the data. We could try to fine-tune the parameters of <code>randomForest</code>. And we should definitely test the model on a hold-out test dataset.</p>
 
-
-```R
-# Where are people spending the most on their taxi trips?
-spends_most_on_trips <- "downtown" # "uptown" or "downtown"
-```
-
-
-```R
-run_tests({
-  test_that("...", {
-      expect_true(str_detect(tolower(spends_most_on_trips), "downtown"), 
-      info = "Well, looking at the plot it looks like people pay more downtown.")
-  })
-})
-```
