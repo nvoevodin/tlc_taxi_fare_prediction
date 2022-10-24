@@ -1,5 +1,5 @@
 
-## 1. New York taxi trips preds
+## 1. New York taxi trips preds (practice/prototype) Data Meetup Presentation
 <p>In this project, we will analyze a random sample of New York journeys. We will also use regression trees and random forests to build a model that can predict the locations and times when the biggest fares can be earned.</p>
 <p>Let's start by taking a look at the data!</p>
 
